@@ -69,8 +69,9 @@ export default function Home() {
                 image: dadosDoForm.get('image')
               }
               const comunidadesAtualizadas = [...comunidades, comiunidade];
-              setComunidades(comunidadesAtualizadas);
-
+              if(comiunidade.titulo && comiunidade.image){
+                setComunidades(comunidadesAtualizadas);
+              }
             }}>
               <div>
                 <input
