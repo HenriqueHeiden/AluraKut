@@ -20,27 +20,62 @@ function ProfileSidebar(propriedades) {
   );
 }
 
+function ProfileRelationsBox(propriedades) {
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {propriedades.title} ({propriedades.items.length})
+      </h2>
+      <ul>
+        {propriedades.items.slice(0, 6).map((itemAtual) => {          
+          return (
+            <li key={itemAtual}>
+              <a href={`https://github.com/${itemAtual}`} >
+                <img src={itemAtual.avatar_url} />
+                <span>{itemAtual.login}</span>
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+
+    </ProfileRelationsBoxWrapper>
+  );
+}
+
 export default function Home() {
-
-
   const usuarioAletorio = 'hheiden';
   const [comunidades, setComunidades] = React.useState([{
-    id:'12312321321312412412312',
+    id: '12312321321312412412312',
     title: 'Eu odeio acordar cedo',
     image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
   },
   {
-    id:'123123123121254454624',
+    id: '123123123121254454624',
     title: 'Hmsis',
     image: 'https://scontent.fbnu1-1.fna.fbcdn.net/v/t1.6435-1/p148x148/104710382_306426774087240_4114119066687703731_n.jpg?_nc_cat=106&ccb=1-3&_nc_sid=1eb0c7&_nc_ohc=BtAfI_d5IlAAX9Y7_8R&_nc_ht=scontent.fbnu1-1.fna&oh=57f8182abdfded07d8a251dc21f8ad36&oe=60F30366'
   }
   ]);
+
   const pessoasFavoritas = ['juunegreiros',
     'omariosouto',
     'peas',
     'rafaballerini',
     'marcobrunodev',
     'felipefialho']
+
+    const [seguidores, setSeguidores] = React.useState([]);
+
+  React.useEffect(function () {
+    fetch('https://api.github.com/users/peas/followers')
+      .then(function (respostaDoServidor) {
+        return respostaDoServidor.json();
+      })
+      .then(function (repostaCompleta) {
+        setSeguidores(repostaCompleta);
+      })
+
+  }, []);
 
   return (
     <>
@@ -69,7 +104,7 @@ export default function Home() {
                 image: dadosDoForm.get('image')
               }
               const comunidadesAtualizadas = [...comunidades, comiunidade];
-              if(comiunidade.titulo && comiunidade.image){
+              if (comiunidade.titulo && comiunidade.image) {
                 setComunidades(comunidadesAtualizadas);
               }
             }}>
@@ -98,8 +133,11 @@ export default function Home() {
           </Box>
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+
+          <ProfileRelationsBox title="Seguidores" items={seguidores} />
+
           <ProfileRelationsBoxWrapper>
-          <h2 className="smallTitle">
+            <h2 className="smallTitle">
               Comunidades ({comunidades.length})
             </h2>
             <ul>
