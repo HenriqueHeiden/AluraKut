@@ -1,4 +1,6 @@
 import React from 'react';
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
 import MainGrid from '../src/componentes/MainGrid';
 import Box from '../src/componentes/Box';
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
@@ -89,8 +91,8 @@ function ComunnityRelationsBox(propriedades) {
   );
 }
 
-export default function Home() {
-  const usuarioAletorio = 'hheiden';
+export default function Home(props) {
+  const usuarioAletorio = props.githubUser;
   const [comunidades, setComunidades] = React.useState([]);
 
   const pessoasFavoritas = ['juunegreiros',
@@ -133,8 +135,6 @@ export default function Home() {
           const comonidadesVindaDoDato = respostaCompleta.data.allCommunities;
           setComunidades(comonidadesVindaDoDato);
         })
-
-
   }, []);
 
   return (
@@ -164,20 +164,20 @@ export default function Home() {
               }
 
               //if (comunidade.titulo && comunidade.image) {
-                fetch('/api/comunidades', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(comunidade)
+              fetch('/api/comunidades', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(comunidade)
+              })
+                .then(async (response) => {
+                  const dados = await response.json();
+                  console.log(dados.registroCriado);
+                  const comunidade = dados.registroCriado;
+                  const comunidadesAtualizadas = [...comunidades, comunidade];
+                  setComunidades(comunidadesAtualizadas)
                 })
-                  .then(async (response) => {
-                    const dados = await response.json();
-                    console.log(dados.registroCriado);
-                    const comunidade = dados.registroCriado;
-                    const comunidadesAtualizadas = [...comunidades, comunidade];
-                    setComunidades(comunidadesAtualizadas)
-                  })
               //}
             }}>
               <div>
@@ -214,4 +214,34 @@ export default function Home() {
       </MainGrid>
     </>
   );
+}
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context)
+  const token = cookies.USER_TOKEN;
+  const { githubUser } = jwt.decode(token);
+
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+      Authorization: token
+    }
+  })
+    .then((resposta) => resposta.json())
+
+  console.log(isAuthenticated);
+
+  if (!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+  return {
+    props: {
+      githubUser
+    }
+  }
 }
